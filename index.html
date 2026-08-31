@@ -1,144 +1,208 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>English Challenge - Amir</title>
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Amir Quest — Missione di oggi</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #eef6ff;
-  text-align: center;
-  margin: 0;
-  padding: 20px;
-}
-
-.box {
-  max-width: 600px;
-  margin: auto;
-  background: white;
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 4px 15px #bbb;
-}
-
-h1 { color: #1677ff; }
-
-button {
-  display: block;
-  width: 100%;
-  padding: 15px;
-  margin: 10px 0;
-  font-size: 18px;
-  border: none;
-  border-radius: 12px;
-  background: #e8f1ff;
-}
-
-button:hover {
-  background: #cfe2ff;
-}
-
-#next {
-  background: #1677ff;
-  color: white;
-  display: none;
-}
-
-#result {
-  font-size: 22px;
-  font-weight: bold;
-  margin: 15px;
-}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{background:linear-gradient(145deg,#eef5ff,#fff7e8);color:#16213b}
+main{max-width:820px;margin:auto;padding:16px}
+.card{background:white;border-radius:26px;padding:22px;margin:14px 0;box-shadow:0 12px 35px rgba(15,25,60,.10)}
+.hero{text-align:center;padding:35px 22px}
+h1{font-size:31px;margin:.3em 0}h2{line-height:1.35}p{line-height:1.5}
+.pill{display:inline-block;border-radius:99px;background:#eef1ff;padding:8px 12px;font-weight:850}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.timer{font-size:23px;font-weight:900}
+.progress{height:12px;border-radius:99px;background:#e7eaf0;overflow:hidden;margin:14px 0}
+.fill{height:100%;width:0;background:#5b67e8;transition:.25s}
+.q{font-size:22px;font-weight:850;margin:17px 0}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:190px;align-items:center}
+.ans{border:2px solid #e1e6ef;background:#fff;color:#16213b;border-radius:18px;padding:15px;font-size:16px;font-weight:800;min-height:72px}
+.ans:nth-child(2),.ans:nth-child(3){transform:translateY(18px)}
+.ans.good{background:#dcfce7;border-color:#22c55e}.ans.bad{background:#fee2e2;border-color:#ef4444}
+button{cursor:pointer}.primary{border:0;border-radius:16px;padding:14px 18px;background:#5b67e8;color:#fff;font-size:17px;font-weight:850}
+.secondary{border:0;border-radius:14px;padding:11px 14px;background:#eef1ff;color:#303b70;font-weight:800}
+.wa{background:#22c55e}.hidden{display:none!important}.cheer{font-size:17px;font-weight:850;margin:12px 0;color:#167459}
+.scratchbox{background:#fff7d9;padding:14px;border-radius:18px;margin:12px 0}canvas{width:100%;height:225px;border:2px dashed #bda855;border-radius:14px;background:#fff;touch-action:none}
+.ar{direction:rtl;text-align:right;font-family:"Geeza Pro","Arial",sans-serif}.reading{font-size:27px;line-height:2;background:#fff8d9;border-radius:18px;padding:18px}
+.scoregrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.score{background:#f5f7fb;border-radius:15px;padding:13px}
+.lock{position:fixed;inset:0;z-index:9999;background:linear-gradient(145deg,#eef5ff,#fff7e8);display:flex;align-items:center;justify-content:center;padding:18px}
+.lockbox{background:white;width:min(420px,100%);padding:28px;border-radius:26px;text-align:center;box-shadow:0 15px 45px #0002}
+.lockbox input{width:100%;font-size:26px;text-align:center;padding:14px;border:2px solid #dde3ee;border-radius:14px;margin:12px 0}
+.small{font-size:13px;color:#697386}
+@media(max-width:570px){.answers{gap:10px}.ans{font-size:14px;padding:11px}.reading{font-size:23px}}
 </style>
 </head>
-
 <body>
+<div id="lock" class="lock"><div class="lockbox">
+<div style="font-size:50px">🔐</div><h1>Amir Quest</h1><p>Inserisci la password per iniziare.</p>
+<input id="pass" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+<button class="primary" style="width:100%" onclick="unlock()">Apri 🚀</button><p id="perr" style="color:#b42318;font-weight:800"></p>
+</div></div>
+<main>
+<section id="welcome" class="card hero hidden">
+<div class="pill">🌟 MISSIONE DI OGGI</div><h1>Amir Quest 🚀</h1>
+<p>Amir, oggi affronterai quattro missioni da circa <b>10 minuti ciascuna</b>.</p>
+<p class="cheer">Pensa con calma, prova sempre e divertiti. Ogni errore ti aiuta a diventare più forte!</p>
+<button class="primary" onclick="startQuest()">▶️ Inizia</button>
+</section>
 
-<div class="box">
-  <h1>🇬🇧 Amir's English Challenge</h1>
-  <p>10 tappe – Vediamo quanto sei forte in inglese! 💪</p>
+<section id="game" class="card hidden">
+<div class="top"><div><div id="icon" style="font-size:44px"></div><div id="sname" class="pill"></div></div><div><div class="timer" id="timer">10:00</div><div class="small">tempo della materia</div></div></div>
+<div class="progress"><div id="fill" class="fill"></div></div>
+<div id="cheer" class="cheer"></div>
+<div id="question" class="q"></div>
+<div id="scratchbox" class="scratchbox hidden"><b>✍️ Espace de calcul</b><p>Pose l'opération en colonne avec ton doigt ou un stylet.</p><canvas id="scratch" width="760" height="225"></canvas><button class="secondary" onclick="clearCanvas()">Effacer</button></div>
+<div id="answers" class="answers"></div>
+<div class="top" style="margin-top:22px"><span id="step" class="small"></span><button id="next" class="primary hidden" onclick="nextQuestion()">Suivant →</button></div>
+</section>
 
-  <h2 id="step"></h2>
-  <h2 id="question"></h2>
+<section id="reading" class="card hidden ar">
+<div style="font-size:44px">📖</div><div class="pill">العَرَبِيَّة — القِرَاءَة</div>
+<h2>مَهَمَّةُ الْقِرَاءَةِ بِصَوْتٍ عَالٍ</h2>
+<p class="cheer">أَحْسَنْتَ يَا أَمِيرُ! اِقْرَأْ بِهُدُوءٍ وَوُضُوحٍ.</p>
+<div class="reading" id="readingText">ذَهَبَ أَمِيرٌ مَعَ أُسْرَتِهِ إِلَى الْحَدِيقَةِ صَبَاحًا، وَشَاهَدَ الْأَشْجَارَ وَالطُّيُورَ الْجَمِيلَةَ. ثُمَّ لَعِبَ مَعَ أَصْدِقَائِهِ، وَعَادَ إِلَى الْبَيْتِ سَعِيدًا.</div>
+<p><button class="primary" onclick="speakReading()">🔊 اِسْمَعْ</button> <button class="secondary" onclick="listenArabic()">🎙️ اِقْرَأْ بِصَوْتِكَ</button></p>
+<p id="readResult"></p>
+<button class="primary" onclick="finishQuest()">إنهاء المهمة ⭐</button>
+<p class="small">ملاحظة: تقييم القراءة تقريبي ويعتمد على التعرّف الصوتي في الجهاز.</p>
+</section>
 
-  <div id="answers"></div>
-
-  <div id="result"></div>
-
-  <button id="next" onclick="nextQuestion()">Prossima tappa ➜</button>
-</div>
+<section id="final" class="card hero hidden">
+<div style="font-size:54px">🏆🌟🏆</div><h1>Congratulazioni Amir!</h1>
+<p class="cheer">Hai fatto un ottimo lavoro! Papà sarà orgoglioso di te.</p>
+<div id="scores" class="scoregrid"></div>
+<p><button class="primary" onclick="finalVoice()">🔊 Ascolta il messaggio</button></p>
+<p><button class="primary wa" onclick="sendWhatsApp()">💬 WhatsApp — manda il risultato a papà</button></p>
+<p class="small">Il risultato contiene le risposte date, le correzioni e l'esito indicativo della lettura araba.</p>
+</section>
+</main>
 
 <script>
-const quiz = [
- {q:"What is the English word for GATTO?",a:["Dog","Cat","Bird"],c:1},
- {q:"Complete: I ___ nine years old.",a:["am","is","are"],c:0},
- {q:"What colour is the sun usually drawn?",a:["Yellow","Blue","Black"],c:0},
- {q:"What is the opposite of BIG?",a:["Tall","Small","Fast"],c:1},
- {q:"Translate: CASA",a:["School","House","Car"],c:1},
- {q:"Complete: She ___ my friend.",a:["am","are","is"],c:2},
- {q:"Which one is an animal?",a:["Table","Tiger","Pencil"],c:1},
- {q:"What number comes after eleven?",a:["Ten","Twelve","Twenty"],c:1},
- {q:"Translate: BUONGIORNO",a:["Good morning","Good night","Goodbye"],c:0},
- {q:"Complete: I like ___ football.",a:["playing","playeds","plays"],c:0}
-];
+const BANK={"english": [{"q": "Complete the sentence: Yesterday, Amir ___ his homework before dinner.", "o": ["does", "did", "doing", "do"], "c": 1}, {"q": "Choose the correct sentence.", "o": ["She can sings very well.", "She can sing very well.", "She can to sing very well.", "She singing very well."], "c": 1}, {"q": "Which word means almost the same as “quick”?", "o": ["heavy", "fast", "quiet", "late"], "c": 1}, {"q": "Complete: There ___ three pencils on the desk.", "o": ["is", "are", "am", "be"], "c": 1}, {"q": "Choose the correct question.", "o": ["You like science?", "Do you like science?", "Are you like science?", "Like you science?"], "c": 1}, {"q": "Complete: Amir is taller ___ his cousin.", "o": ["then", "than", "from", "that"], "c": 1}, {"q": "Choose the correct plural of “child”.", "o": ["childs", "children", "childes", "childrens"], "c": 1}, {"q": "Which sentence talks about the future?", "o": ["I played football tomorrow.", "I will play football tomorrow.", "I play football yesterday.", "I was play football tomorrow."], "c": 1}, {"q": "Complete: My sister ___ reading a book now.", "o": ["are", "is", "am", "be"], "c": 1}, {"q": "Choose the best answer: “Why are you wearing a coat?”", "o": ["Because I am hungry.", "Because it is cold.", "Because I can swim.", "Because it is Monday."], "c": 1}, {"q": "Complete: We ___ to the museum last Saturday.", "o": ["go", "went", "goes", "going"], "c": 1}, {"q": "Choose the correct sentence.", "o": ["He don't like apples.", "He doesn't like apples.", "He doesn't likes apples.", "He not like apples."], "c": 1}], "math": [{"q": "Pose et calcule : 347 + 286", "spoken": "Amir, pose l’addition trois cent quarante-sept plus deux cent quatre-vingt-six en colonne, puis calcule le résultat.", "o": ["623", "633", "643", "613"], "c": 1}, {"q": "Pose et calcule : 804 − 376", "spoken": "Pose la soustraction huit cent quatre moins trois cent soixante-seize en colonne. Fais attention aux retenues.", "o": ["418", "428", "438", "448"], "c": 1}, {"q": "Pose et calcule : 27 × 6", "spoken": "Pose la multiplication vingt-sept fois six. Écris les étapes dans l’espace de calcul.", "o": ["152", "162", "172", "182"], "c": 1}, {"q": "Calcule : 144 ÷ 12", "spoken": "Calcule cent quarante-quatre divisé par douze. Tu peux poser la division avant de répondre.", "o": ["10", "12", "14", "16"], "c": 1}, {"q": "Pose et calcule : 568 + 247", "spoken": "Pose cinq cent soixante-huit plus deux cent quarante-sept en colonne.", "o": ["805", "815", "825", "835"], "c": 1}, {"q": "Pose et calcule : 900 − 458", "spoken": "Pose neuf cents moins quatre cent cinquante-huit en colonne. Vérifie bien chaque chiffre.", "o": ["432", "442", "452", "462"], "c": 1}, {"q": "Pose et calcule : 36 × 7", "spoken": "Pose trente-six fois sept et calcule soigneusement.", "o": ["242", "252", "262", "272"], "c": 1}, {"q": "Calcule : 168 ÷ 8", "spoken": "Calcule cent soixante-huit divisé par huit. Pose la division si tu en as besoin.", "o": ["19", "21", "23", "24"], "c": 1}, {"q": "Calcule dans le bon ordre : 125 + 68 − 43", "spoken": "Calcule cent vingt-cinq plus soixante-huit, puis enlève quarante-trois. Écris les deux étapes.", "o": ["140", "150", "160", "170"], "c": 1}, {"q": "Calcule : 9 × 8 + 16", "spoken": "Commence par neuf fois huit, puis ajoute seize.", "o": ["78", "88", "98", "108"], "c": 1}, {"q": "Calcule : 240 ÷ 6 + 15", "spoken": "Commence par deux cent quarante divisé par six, puis ajoute quinze.", "o": ["45", "55", "65", "75"], "c": 1}, {"q": "Calcule : 75 × 4 − 120", "spoken": "Commence par soixante-quinze fois quatre, puis enlève cent vingt.", "o": ["160", "180", "200", "220"], "c": 1}], "francais": [{"q": "Complète : Hier, nous ___ au parc après l’école.", "o": ["allons", "sommes allés", "allez", "irons"], "c": 1}, {"q": "Quel est le contraire de « difficile » ?", "o": ["lent", "facile", "lourd", "triste"], "c": 1}, {"q": "Complète : Amir est plus grand ___ son ami.", "o": ["de", "que", "à", "pour"], "c": 1}, {"q": "Choisis la phrase correcte.", "o": ["Je va à l’école.", "Je vais à l’école.", "Je aller à l’école.", "Je vais à école."], "c": 1}, {"q": "Que veut dire « J’ai faim » ?", "o": ["J’ai sommeil.", "Je veux manger.", "Je suis froid.", "Je veux courir."], "c": 1}, {"q": "Quel mot signifie « rapidement » ?", "o": ["doucement", "vite", "jamais", "encore"], "c": 1}, {"q": "Complète : Ils sont ___ de leur résultat.", "o": ["content", "contents", "contente", "contentes"], "c": 1}, {"q": "Choisis le bon article : ___ école est grande.", "o": ["Le", "L’", "Un", "Du"], "c": 1}, {"q": "Complète : Demain, je ___ chez ma grand-mère.", "o": ["suis allé", "vais aller", "allais", "aller"], "c": 1}, {"q": "Quelle phrase est une question ?", "o": ["Tu aimes lire.", "Est-ce que tu aimes lire ?", "Tu aimes lire !", "J’aime lire."], "c": 1}, {"q": "Complète : Nous ___ nos devoirs maintenant.", "o": ["fait", "faisons", "faites", "faire"], "c": 1}, {"q": "Choisis la bonne phrase.", "o": ["Les filles est arrivées.", "Les filles sont arrivées.", "Les filles sont arrivé.", "Les filles a arrivées."], "c": 1}], "arabic": [{"q": "مَا ضِدُّ كَلِمَةِ «سَرِيعٌ»؟", "o": ["قَوِيٌّ", "بَطِيءٌ", "طَوِيلٌ", "جَمِيلٌ"], "c": 1}, {"q": "أَكْمِلِ الْجُمْلَةَ: «أَنَا ___ الْكِتَابَ كُلَّ يَوْمٍ.»", "o": ["يَقْرَأُ", "أَقْرَأُ", "تَقْرَأُ", "نَقْرَأُ"], "c": 1}, {"q": "أَيُّ كَلِمَةٍ تَبْدَأُ بِهَمْزَةٍ؟", "o": ["كِتَابٌ", "أَسَدٌ", "مَدْرَسَةٌ", "قَلَمٌ"], "c": 1}, {"q": "مَا جَمْعُ كَلِمَةِ «كِتَابٌ»؟", "o": ["كِتَابَانِ", "كُتُبٌ", "كَاتِبٌ", "مَكْتَبٌ"], "c": 1}, {"q": "أَيُّ جُمْلَةٍ فِي الْمَاضِي؟", "o": ["يَذْهَبُ أَمِيرٌ إِلَى الْمَدْرَسَةِ.", "ذَهَبَ أَمِيرٌ إِلَى الْمَدْرَسَةِ.", "سَيَذْهَبُ أَمِيرٌ إِلَى الْمَدْرَسَةِ.", "اِذْهَبْ يَا أَمِيرُ إِلَى الْمَدْرَسَةِ."], "c": 1}, {"q": "أَيُّ كَلِمَةٍ فِيهَا شَدَّةٌ؟", "o": ["قَلَمٌ", "مُعَلِّمٌ", "كِتَابٌ", "بَيْتٌ"], "c": 1}, {"q": "أَكْمِلْ: «أَنَا ___ الْكُرَةَ مَعَ أَصْدِقَائِي.»", "o": ["يَلْعَبُ", "أَلْعَبُ", "تَلْعَبُ", "نَلْعَبُ"], "c": 1}, {"q": "اِخْتَرِ الْكَلِمَةَ الْمُنَاسِبَةَ: «الطَّقْسُ الْيَوْمَ ___.»", "o": ["يَكْتُبُ", "جَمِيلٌ", "يَأْكُلُ", "مَدْرَسَةٌ"], "c": 1}, {"q": "أَيُّ كَلِمَةٍ فِيهَا تَنْوِينُ ضَمٍّ؟", "o": ["كِتَابَ", "كِتَابٌ", "كِتَابٍ", "الْكِتَابُ"], "c": 1}, {"q": "أَيُّ كَلِمَةٍ فِيهَا سُكُونٌ؟", "o": ["قَلَمٌ", "مَكْتَبٌ", "كُتُبٌ", "طَالِبٌ"], "c": 1}, {"q": "أَكْمِلْ: «ذَهَبْنَا إِلَى السُّوقِ ___ اشْتَرَيْنَا الْفَاكِهَةَ.»", "o": ["لَكِنْ", "ثُمَّ", "أَوْ", "لِأَنَّ"], "c": 1}, {"q": "مَا مَعْنَى «يَسْتَيْقِظُ»؟", "o": ["يَنَامُ", "يَصْحُو مِنَ النَّوْمِ", "يَجْلِسُ", "يَكْتُبُ"], "c": 1}]};
+const ORDER=["english","math","francais","arabic"];
+const META={
+ english:{name:"ENGLISH",icon:"🇬🇧",lang:"en-GB",next:"Next →",
+ intro:"Amir, welcome to your English mission. Read carefully, think, and choose the best answer.",
+ good:["Excellent, Amir!","Great job, Amir!","Fantastic thinking!","Keep going, champion!"],
+ bad:["Good try, Amir. Learn from it and keep going!","Almost! Stay focused and try the next one."]},
+ math:{name:"MATHÉMATIQUES",icon:"🧮",lang:"fr-FR",next:"Suivant →",
+ intro:"Bravo Amir ! Voici les mathématiques. Tout est expliqué en français. Pose les opérations en colonne dans l'espace de calcul.",
+ good:["Excellent Amir !","Très bon calcul !","Bravo, continue !","Super travail !"],
+ bad:["Bonne tentative. Vérifie ton calcul et continue !","Presque ! Pose bien l'opération et continue."]},
+ francais:{name:"FRANÇAIS",icon:"🇫🇷",lang:"fr-FR",next:"Suivant →",
+ intro:"Bravo Amir ! Bienvenue dans ta mission de français. Lis attentivement et choisis la meilleure réponse.",
+ good:["Excellent Amir !","Très bien !","Bravo !","Continue comme ça !"],
+ bad:["Bonne tentative, Amir. Continue, tu progresses !","Presque ! Lis bien la prochaine question."]},
+ arabic:{name:"العَرَبِيَّة",icon:"🌙",lang:"ar-MA",next:"التَّالِي ←",
+ intro:"أَحْسَنْتَ يَا أَمِيرُ! مَرْحَبًا بِكَ فِي مَهَمَّةِ اللُّغَةِ الْعَرَبِيَّةِ. اِقْرَأْ بِهُدُوءٍ وَاخْتَرِ الْجَوَابَ الْأَفْضَلَ.",
+ good:["مُمْتَازٌ يَا أَمِيرُ!","أَحْسَنْتَ!","رَائِعٌ، اِسْتَمِرَّ!","عَمَلٌ جَمِيلٌ!"],
+ bad:["مُحَاوَلَةٌ جَيِّدَةٌ. تَعَلَّمْ وَاسْتَمِرَّ!","قَرِيبٌ! رَكِّزْ فِي السُّؤَالِ التَّالِي."]}
+};
+let si=0,qi=0,score={english:[0,0],math:[0,0],francais:[0,0],arabic:[0,0]},log=[];
+let timerHandle=null,timeLeft=600,readTranscript="",readConfidence=null,readIndicative=null;
+const $=id=>document.getElementById(id);
 
-let current = 0;
-let score = 0;
-
-function showQuestion(){
-  document.getElementById("step").innerText =
-    "Tappa " + (current+1) + " di 10";
-
-  document.getElementById("question").innerText =
-    quiz[current].q;
-
-  const answers = document.getElementById("answers");
-  answers.innerHTML = "";
-
-  quiz[current].a.forEach((answer,index)=>{
-    const b = document.createElement("button");
-    b.innerText = answer;
-    b.onclick = ()=>checkAnswer(index);
-    answers.appendChild(b);
-  });
-
-  document.getElementById("result").innerText="";
-  document.getElementById("next").style.display="none";
+function unlock(){
+ if($("pass").value==="1234"){ $("lock").remove(); $("welcome").classList.remove("hidden"); sessionStorage.setItem("amir1234","1"); }
+ else{$("perr").textContent="Password non corretta. Riprova.";$("pass").value="";}
 }
+document.addEventListener("DOMContentLoaded",()=>{
+ if(sessionStorage.getItem("amir1234")==="1"){const l=$("lock");if(l)l.remove();$("welcome").classList.remove("hidden")}
+ $("pass")?.addEventListener("keydown",e=>{if(e.key==="Enter")unlock()});
+});
 
-function checkAnswer(index){
-  const buttons =
-    document.getElementById("answers").querySelectorAll("button");
-
-  buttons.forEach(b=>b.disabled=true);
-
-  if(index === quiz[current].c){
-    score++;
-    document.getElementById("result").innerText="✅ Bravo Amir!";
-  } else {
-    document.getElementById("result").innerText="❌ Quasi! Riprova alla prossima.";
-  }
-
-  document.getElementById("next").style.display="block";
+function say(text,lang){
+ if(!("speechSynthesis" in window))return;
+ speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=.92;speechSynthesis.speak(u);
 }
-
+function startQuest(){
+ $("welcome").classList.add("hidden");$("game").classList.remove("hidden");
+ say("Ciao Amir! Benvenuto nella missione di oggi. Hai quattro sfide da circa dieci minuti. Divertiti, pensa con calma e fai del tuo meglio!","it-IT");
+ setTimeout(startSubject,1800);
+}
+function startSubject(){
+ qi=0;timeLeft=600;const s=ORDER[si],m=META[s];
+ $("icon").textContent=m.icon;$("sname").textContent=m.name;$("next").textContent=m.next;
+ $("scratchbox").classList.toggle("hidden",s!=="math");
+ if(timerHandle)clearInterval(timerHandle);updateTimer();
+ timerHandle=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerHandle);finishSubject();}},1000);
+ setTimeout(()=>say(m.intro,m.lang),250);render();
+}
+function updateTimer(){$("timer").textContent=Math.floor(timeLeft/60)+":"+String(timeLeft%60).padStart(2,"0")}
+function visualOrder(q){
+ // Four layouts; correct answer is never visually first.
+ let arr=[[0,2,1,3],[2,0,3,1],[3,1,0,2],[0,3,2,1]][qi%4].slice();
+ if(arr[0]===q.c){let k=arr.findIndex((x,i)=>i>0&&x!==q.c);[arr[0],arr[k]]=[arr[k],arr[0]]}
+ return arr;
+}
+function render(){
+ const s=ORDER[si],q=BANK[s][qi],m=META[s];
+ $("fill").style.width=(qi/BANK[s].length*100)+"%";$("question").textContent=q.q;$("step").textContent=(qi+1)+" / "+BANK[s].length;
+ $("answers").innerHTML="";$("next").classList.add("hidden");$("cheer").textContent="";
+ visualOrder(q).forEach(idx=>{let b=document.createElement("button");b.className="ans";b.textContent=q.o[idx];b.onclick=()=>pick(idx,b);$("answers").appendChild(b)});
+ if(s==="math"){clearCanvas();setTimeout(()=>say(q.spoken||q.q,"fr-FR"),220)}
+ else if(s==="english") setTimeout(()=>say(q.q,"en-GB"),180);
+ else if(s==="francais") setTimeout(()=>say(q.q,"fr-FR"),180);
+ else if(s==="arabic") setTimeout(()=>say(q.q,"ar-MA"),180);
+}
+function pick(idx,btn){
+ const s=ORDER[si],q=BANK[s][qi],m=META[s],ok=idx===q.c;
+ score[s][1]++;if(ok)score[s][0]++;
+ log.push({subject:s,question:q.q,chosen:q.o[idx],correct:q.o[q.c],ok});
+ [...$("answers").children].forEach(b=>b.disabled=true);btn.classList.add(ok?"good":"bad");
+ const phrase=ok?m.good[(qi+si)%m.good.length]:m.bad[(qi+si)%m.bad.length];
+ $("cheer").textContent=phrase;say(phrase,m.lang);$("next").classList.remove("hidden");
+}
 function nextQuestion(){
-  current++;
-
-  if(current < quiz.length){
-    showQuestion();
-  } else {
-    document.querySelector(".box").innerHTML =
-      "<h1>🏆 Test completato!</h1>" +
-      "<h2>Amir ha ottenuto " + score + " / 10</h2>" +
-      "<p>Ottimo lavoro! 🇬🇧👏</p>";
-  }
+ qi++;if(qi<BANK[ORDER[si]].length)render();else finishSubject();
+}
+function finishSubject(){
+ if(timerHandle)clearInterval(timerHandle);
+ si++;
+ if(si<ORDER.length)startSubject();
+ else{ $("game").classList.add("hidden");$("reading").classList.remove("hidden");say("أَحْسَنْتَ يَا أَمِيرُ! الآنَ مَهَمَّةُ الْقِرَاءَةِ. اِقْرَأْ بِهُدُوءٍ وَوُضُوحٍ.","ar-MA"); }
+}
+function speakReading(){say($("readingText").textContent,"ar-MA")}
+function normalizeArabic(s){return s.normalize("NFD").replace(/[\u064B-\u065F\u0670]/g,"").replace(/[^؀-ۿ ]/g," ").replace(/\s+/g," ").trim()}
+function listenArabic(){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){$("readResult").textContent="🎙️ التعرّف على الصوت غير متاح على هذا الجهاز. يمكنك إكمال المهمة، وسيظهر ذلك في النتيجة.";return}
+ const r=new SR();r.lang="ar-MA";r.interimResults=false;r.maxAlternatives=1;
+ r.onresult=e=>{
+   readTranscript=e.results[0][0].transcript;readConfidence=Math.round((e.results[0][0].confidence||0)*100);
+   const exp=new Set(normalizeArabic($("readingText").textContent).split(" ")), got=new Set(normalizeArabic(readTranscript).split(" "));
+   let hit=0;got.forEach(w=>{if(exp.has(w))hit++});
+   readIndicative=Math.min(100,Math.round(hit/Math.max(1,exp.size)*100));
+   $("readResult").textContent="🎤 سَمِعْتُ: "+readTranscript+" — التعرّف التقريبي: "+readIndicative+"%";
+   say("أَحْسَنْتَ يَا أَمِيرُ! شُكْرًا عَلَى الْقِرَاءَةِ.","ar-MA");
+ };
+ r.onerror=()=>{$("readResult").textContent="لم أسمع بوضوح. جرّب مرة أخرى، أو أكمل المهمة."};
+ r.start();
+}
+function finishQuest(){
+ $("reading").classList.add("hidden");$("final").classList.remove("hidden");
+ $("scores").innerHTML=ORDER.map(s=>`<div class="score"><b>${META[s].icon} ${META[s].name}</b><br><span style="font-size:24px;font-weight:900">${score[s][0]} / ${score[s][1]}</span></div>`).join("");
+ finalVoice();
+}
+function finalVoice(){say("Congratulazioni Amir! Hai fatto un ottimo lavoro! Papà sarà orgoglioso di te. Ora premi il pulsante WhatsApp e manda il risultato a papà.","it-IT")}
+function resultPayload(){return {student:"Amir",date:new Date().toISOString(),scores:score,answers:log,arabicReading:{transcript:readTranscript,recognitionConfidence:readConfidence,indicativeWordMatch:readIndicative}}}
+function sendWhatsApp(){
+ const enc=btoa(unescape(encodeURIComponent(JSON.stringify(resultPayload()))));
+ const resultLink=location.href.split("#")[0]+"#amir-result="+encodeURIComponent(enc);
+ const msg="🏆 Risultato Amir Quest\n"+resultLink+"\n\nPapà, copia questo link e mandalo a ChatGPT per il resoconto completo e il test personalizzato successivo.";
+ location.href="https://wa.me/?text="+encodeURIComponent(msg);
 }
 
-showQuestion();
+// handwriting canvas
+const cv=$("scratch"),ctx=cv.getContext("2d");let drawing=false,last=null;
+function pnt(e){const r=cv.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return {x:(t.clientX-r.left)*cv.width/r.width,y:(t.clientY-r.top)*cv.height/r.height}}
+function down(e){drawing=true;last=pnt(e);e.preventDefault()}
+function move(e){if(!drawing)return;const p=pnt(e);ctx.lineWidth=4;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;e.preventDefault()}
+function up(){drawing=false;last=null}
+cv.addEventListener("mousedown",down);cv.addEventListener("mousemove",move);window.addEventListener("mouseup",up);
+cv.addEventListener("touchstart",down,{passive:false});cv.addEventListener("touchmove",move,{passive:false});cv.addEventListener("touchend",up);
+function clearCanvas(){ctx.clearRect(0,0,cv.width,cv.height)}
 </script>
-
-</body>
-</html>
+</body></html>
